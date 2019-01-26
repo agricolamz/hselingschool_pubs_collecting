@@ -1,0 +1,60 @@
+---
+author: "G. Moroz"
+output: 
+  html_document:
+    code_folding: hide
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include=FALSE}
+library(tidyverse)
+library(rvest)
+
+# обкачаем страницу со списком сотрудников и их личными страницами
+source <- read_lines("https://ling.hse.ru/persons") 
+
+# возьмем оттуда все личные страницы
+data_frame(links = source) %>% 
+  filter(str_detect(links, '<a class="fa-person__name"')) %>%
+  mutate(links = str_extract(links, "www.hse.ru/.*"),
+         links = str_replace(links, '">', "")) %>% 
+  distinct() ->
+  staff
+
+# создадим пустой датафрейм, который потом будет заполняться
+publications <- data_frame(links = NA, full_names = NA, publications = NA)
+
+# запустим цикл по всем старницам
+sapply(1:nrow(staff), function(i){
+# скачаем со страницы публикации сотрудников
+  source <- read_html(paste0("https://", staff$links[i]))
+  source %>% 
+    html_nodes("div.large") %>%
+    html_text() ->
+    pubs
+  source %>% 
+# скачаем со страницы имена сотрудников
+  html_nodes("h1") %>%
+  html_text() ->
+    name
+  publications <<- rbind(publications, data_frame(links = staff$links[i], 
+                                                  full_names = name[1],
+                                                  publications = pubs))
+  })
+
+# преобразуем имена в отдельные столбцы
+publications %>% 
+  slice(-1) %>% 
+  rowwise() %>% 
+  mutate(names = str_split(full_names, " ", simplify = TRUE)[2],
+         fathers_name = str_split(full_names, " ", simplify = TRUE)[3],
+         surname = str_split(full_names, " ", simplify = TRUE)[1]) %>% 
+  select(links, names, fathers_name, surname, publications) %>% 
+  write_csv("lingschool_pubs.csv")
+```
+
+```{r}
+DT::datatable(read_csv("lingschool_pubs.csv"), filter = 'top', rownames = FALSE, options = list(pageLength = 50, dom = 'tip'))
+```
+
