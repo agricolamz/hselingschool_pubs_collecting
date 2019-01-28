@@ -10,7 +10,8 @@ editor_options:
 ```{r, include=FALSE}
 library(tidyverse)
 library(rvest)
-
+```
+```{r, include=FALSE}
 # обкачаем страницу со списком сотрудников и их личными страницами
 source <- read_lines("https://ling.hse.ru/persons") 
 
@@ -48,13 +49,21 @@ publications %>%
   slice(-1) %>% 
   rowwise() %>% 
   mutate(names = str_split(full_names, " ", simplify = TRUE)[2],
-         fathers_name = str_split(full_names, " ", simplify = TRUE)[3],
-         surname = str_split(full_names, " ", simplify = TRUE)[1]) %>% 
-  select(links, names, fathers_name, surname, publications) %>% 
+         patronymic = str_split(full_names, " ", simplify = TRUE)[3],
+         surname = str_split(full_names, " ", simplify = TRUE)[1],
+         type = str_extract(publications, "Книга|Статья|Глава книги|Препринт"),
+         publications = str_replace(publications, "Книга |Статья |Глава книги |Препринт ", ""),
+         year = str_extract(publications, "20\\d{2}|199\\d{1}")) %>% 
+  select(links, names, patronymic, surname, type, year, publications) %>% 
   write_csv("lingschool_pubs.csv")
 ```
 
 ```{r}
-DT::datatable(read_csv("lingschool_pubs.csv"), filter = 'top', rownames = FALSE, options = list(pageLength = 50, dom = 'tip'))
+df <- read_csv("lingschool_pubs.csv")
+
+df %>% 
+  mutate(surname = paste0('<a href="', links, '" target="_blank">', surname, '</a>')) %>% 
+  select(-links) %>% 
+  DT::datatable(filter = 'top', rownames = FALSE, options = list(pageLength = 50, dom = 'tip'), escape = FALSE)
 ```
 
