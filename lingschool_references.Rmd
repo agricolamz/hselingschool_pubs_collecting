@@ -53,7 +53,7 @@ publications %>%
          surname = str_split(full_names, " ", simplify = TRUE)[1],
          type = str_extract(publications, "Книга|Статья|Глава книги|Препринт"),
          publications = str_replace(publications, "Книга |Статья |Глава книги |Препринт ", ""),
-         year = str_extract(publications, "20\\d{2}|199\\d{1}")) %>% 
+         year = str_extract(publications, "20\\d{2}|199\\d{1}|198\\d{1}")) %>% 
   select(links, names, patronymic, surname, type, year, publications) %>% 
   write_csv("lingschool_pubs.csv")
 ```
