@@ -11,7 +11,7 @@ editor_options:
 library(tidyverse)
 library(rvest)
 ```
-```{r, include=FALSE}
+```{r, include=FALSE, eval=FALSE}
 # обкачаем страницу со списком сотрудников и их личными страницами
 source <- read_lines("https://ling.hse.ru/persons") 
 
@@ -58,11 +58,12 @@ publications %>%
   write_csv("lingschool_pubs.csv")
 ```
 
-```{r}
+```{r, include=FALSE}
 df <- read_csv("lingschool_pubs.csv")
-
+```
+```{r}
 df %>% 
-  mutate(surname = paste0('<a href="', links, '" target="_blank">', surname, '</a>')) %>% 
+  mutate(surname = paste0('<a href="http://', links, '" target="_blank">', surname, '</a>')) %>% 
   select(-links) %>% 
   DT::datatable(filter = 'top', rownames = FALSE, options = list(pageLength = 50, dom = 'tip'), escape = FALSE)
 ```
