@@ -11,7 +11,7 @@ editor_options:
 library(tidyverse)
 library(rvest)
 ```
-```{r, include=FALSE, eval=FALSE}
+```{r, include=FALSE, eval=TRUE}
 # обкачаем страницу со списком сотрудников и их личными страницами
 source <- read_lines("https://ling.hse.ru/persons") 
 
